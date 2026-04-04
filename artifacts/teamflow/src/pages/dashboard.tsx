@@ -6,6 +6,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, Clock, ListTodo, Users, TrendingUp, Activity } from "lucide-react";
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.35, ease: "easeOut" },
+  }),
+};
 
 function StatCard({
   title,
@@ -13,28 +23,32 @@ function StatCard({
   icon: Icon,
   description,
   color,
+  index,
 }: {
   title: string;
   value: number | string;
   icon: React.ElementType;
   description?: string;
   color: string;
+  index: number;
 }) {
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">{title}</p>
-            <p className="text-3xl font-bold mt-1">{value}</p>
-            {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
+    <motion.div custom={index} initial="hidden" animate="visible" variants={fadeUp}>
+      <Card className="hover:shadow-md transition-shadow duration-200">
+        <CardContent className="p-6">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-sm font-medium text-muted-foreground">{title}</p>
+              <p className="text-3xl font-bold mt-1">{value}</p>
+              {description && <p className="text-xs text-muted-foreground mt-1">{description}</p>}
+            </div>
+            <div className={`p-2 rounded-lg ${color}`}>
+              <Icon className="h-5 w-5" />
+            </div>
           </div>
-          <div className={`p-2 rounded-lg ${color}`}>
-            <Icon className="h-5 w-5" />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }
 
@@ -61,10 +75,14 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
         <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
         <p className="text-muted-foreground mt-1">Welcome back. Here's what's happening.</p>
-      </div>
+      </motion.div>
 
       {summaryLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -74,14 +92,19 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Tasks" value={summary?.totalTasks ?? 0} icon={ListTodo} color="bg-primary/10 text-primary" />
-          <StatCard title="Completed" value={summary?.completedTasks ?? 0} icon={CheckCircle} color="bg-green-100 text-green-700" description={`${summary?.completionRate ?? 0}% completion rate`} />
-          <StatCard title="In Progress" value={summary?.inProgressTasks ?? 0} icon={Activity} color="bg-blue-100 text-blue-700" />
-          <StatCard title="Pending" value={summary?.pendingTasks ?? 0} icon={Clock} color="bg-amber-100 text-amber-700" />
+          <StatCard index={0} title="Total Tasks" value={summary?.totalTasks ?? 0} icon={ListTodo} color="bg-primary/10 text-primary" />
+          <StatCard index={1} title="Completed" value={summary?.completedTasks ?? 0} icon={CheckCircle} color="bg-green-100 text-green-700" description={`${summary?.completionRate ?? 0}% completion rate`} />
+          <StatCard index={2} title="In Progress" value={summary?.inProgressTasks ?? 0} icon={Activity} color="bg-blue-100 text-blue-700" />
+          <StatCard index={3} title="Pending" value={summary?.pendingTasks ?? 0} icon={Clock} color="bg-amber-100 text-amber-700" />
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <motion.div
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.35, ease: "easeOut" }}
+      >
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -124,73 +147,83 @@ export default function Dashboard() {
               <Skeleton className="h-32 w-full" />
             ) : (
               <>
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">Total Team Members</p>
-                    <p className="text-sm text-muted-foreground">Across all roles</p>
-                  </div>
-                  <span className="text-3xl font-bold text-primary">{summary?.totalUsers ?? 0}</span>
-                </div>
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">Active Workers</p>
-                    <p className="text-sm text-muted-foreground">Assigned to tasks</p>
-                  </div>
-                  <span className="text-3xl font-bold text-primary">{summary?.totalWorkers ?? 0}</span>
-                </div>
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/50">
-                  <div>
-                    <p className="font-medium">Completion Rate</p>
-                    <p className="text-sm text-muted-foreground">Overall progress</p>
-                  </div>
-                  <span className="text-3xl font-bold text-primary">{summary?.completionRate ?? 0}%</span>
-                </div>
+                {[
+                  { label: "Total Team Members", sub: "Across all roles", value: summary?.totalUsers ?? 0 },
+                  { label: "Active Workers", sub: "Assigned to tasks", value: summary?.totalWorkers ?? 0 },
+                  { label: "Completion Rate", sub: "Overall progress", value: `${summary?.completionRate ?? 0}%` },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    className="flex items-center justify-between p-4 rounded-lg bg-muted/50"
+                    initial={{ opacity: 0, x: 16 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + i * 0.08, duration: 0.3 }}
+                  >
+                    <div>
+                      <p className="font-medium">{item.label}</p>
+                      <p className="text-sm text-muted-foreground">{item.sub}</p>
+                    </div>
+                    <span className="text-3xl font-bold text-primary">{item.value}</span>
+                  </motion.div>
+                ))}
               </>
             )}
           </CardContent>
         </Card>
-      </div>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Latest task updates</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {recentLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
-            </div>
-          ) : recentTasks.length === 0 ? (
-            <div className="py-8 text-center text-muted-foreground text-sm">No recent activity</div>
-          ) : (
-            <div className="space-y-3">
-              {recentTasks.map((task) => (
-                <div key={task.id} className="flex items-center gap-4 p-4 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <p className="font-medium text-sm truncate">{task.name}</p>
-                      {statusBadge(task.status)}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5, duration: 0.35, ease: "easeOut" }}
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Latest task updates</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+              </div>
+            ) : recentTasks.length === 0 ? (
+              <div className="py-8 text-center text-muted-foreground text-sm">No recent activity</div>
+            ) : (
+              <div className="space-y-3">
+                {recentTasks.map((task, i) => (
+                  <motion.div
+                    key={task.id}
+                    className="flex items-center gap-4 p-4 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors"
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.55 + i * 0.07, duration: 0.3 }}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-medium text-sm truncate">{task.name}</p>
+                        {statusBadge(task.status)}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Progress value={task.progress} className="h-1.5 flex-1" />
+                        <span className="text-xs text-muted-foreground w-8 text-right">{task.progress}%</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Progress value={task.progress} className="h-1.5 flex-1" />
-                      <span className="text-xs text-muted-foreground w-8 text-right">{task.progress}%</span>
+                    <div className="text-right hidden sm:block">
+                      <p className="text-xs text-muted-foreground">
+                        {task.assignedToUser ? task.assignedToUser.username : "Unassigned"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(new Date(task.updatedAt), "MMM d")}
+                      </p>
                     </div>
-                  </div>
-                  <div className="text-right hidden sm:block">
-                    <p className="text-xs text-muted-foreground">
-                      {task.assignedToUser ? task.assignedToUser.username : "Unassigned"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(task.updatedAt), "MMM d")}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </motion.div>
     </div>
   );
 }
