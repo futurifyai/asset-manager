@@ -10,7 +10,7 @@ function userToDto(user: typeof usersTable.$inferSelect) {
   return { id: user.id, username: user.username, role: user.role, createdAt: user.createdAt };
 }
 
-router.get("/users", authMiddleware, requireRole("admin"), async (req, res): Promise<void> => {
+router.get("/users", authMiddleware, requireRole("admin", "manager"), async (req, res): Promise<void> => {
   const { role } = req.query as { role?: string };
   let users;
   if (role) {
