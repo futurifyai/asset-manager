@@ -86,7 +86,7 @@ export default function Tasks() {
   const [deletingTaskId, setDeletingTaskId] = useState<number | null>(null);
   const [form, setForm] = useState<TaskForm>(emptyForm);
   const [aiDescription, setAiDescription] = useState("");
-  const [aiAssignedTo, setAiAssignedTo] = useState("");
+  const [aiAssignedTo, setAiAssignedTo] = useState("none");
   const [generatedTasks, setGeneratedTasks] = useState<Array<{ name: string; description: string; status: string; progress: number; selected: boolean }>>([]);
 
   const { data: tasksData, isLoading } = useListTasks(
@@ -193,7 +193,7 @@ export default function Tasks() {
     aiMutation.mutate({
       data: {
         projectDescription: aiDescription,
-        assignedTo: aiAssignedTo ? parseInt(aiAssignedTo, 10) : null,
+        assignedTo: aiAssignedTo && aiAssignedTo !== "none" ? parseInt(aiAssignedTo, 10) : null,
       },
     });
   };
@@ -209,7 +209,7 @@ export default function Tasks() {
               description: task.description,
               status: task.status as Status,
               progress: 0,
-              assignedTo: aiAssignedTo ? parseInt(aiAssignedTo, 10) : null,
+              assignedTo: aiAssignedTo && aiAssignedTo !== "none" ? parseInt(aiAssignedTo, 10) : null,
             },
           },
           { onSettled: () => resolve() }
@@ -482,7 +482,7 @@ export default function Tasks() {
                 <Select value={aiAssignedTo} onValueChange={setAiAssignedTo}>
                   <SelectTrigger><SelectValue placeholder="Select worker" /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Unassigned</SelectItem>
+                    <SelectItem value="none">Unassigned</SelectItem>
                     {workers.map((w) => <SelectItem key={w.id} value={w.id.toString()}>{w.username}</SelectItem>)}
                   </SelectContent>
                 </Select>
