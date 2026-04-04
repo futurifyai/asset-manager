@@ -3,20 +3,32 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: TeamFlow Task Management API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: users
+    description: User management
+  - name: tasks
+    description: Task management
+  - name: dashboard
+    description: Dashboard data
+  - name: reports
+    description: Reports and analytics
+  - name: ai
+    description: AI features
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,7 +36,398 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user (Admin only in production; open for first admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current authenticated user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: role
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [admin, manager, worker]
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UsersListResponse"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a new user (Admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserBody"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateUser
+      tags: [users]
+      summary: Update a user (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserBody"
+      responses:
+        "200":
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+    delete:
+      operationId: deleteUser
+      tags: [users]
+      summary: Delete a user (Admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List tasks (filtered by role)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [Pending, "In Progress", Completed]
+        - name: assignedTo
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TasksListResponse"
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a new task (Manager or Admin)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskBody"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tasks/{id}:
+    get:
+      operationId: getTask
+      tags: [tasks]
+      summary: Get a task by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update a task
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskBody"
+      responses:
+        "200":
+          description: Task updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Delete a task (Manager or Admin)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Task deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary counts and stats
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dashboard summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/recent-tasks:
+    get:
+      operationId: getRecentTasks
+      tags: [dashboard]
+      summary: Get recent tasks for the dashboard activity feed
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Recent tasks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TasksListResponse"
+
+  /reports/overview:
+    get:
+      operationId: getReportsOverview
+      tags: [reports]
+      summary: Get full reports overview with breakdowns
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Reports overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReportsOverview"
+
+  /ai/generate-tasks:
+    post:
+      operationId: generateTasksWithAi
+      tags: [ai]
+      summary: Generate tasks from a project description using AI
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateTasksBody"
+      responses:
+        "200":
+          description: Generated tasks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneratedTasksResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +437,420 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+      required:
+        - status
+        - message
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+      required:
+        - status
+        - message
+
+    LoginBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    RegisterBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, worker]
+      required:
+        - username
+        - password
+        - role
+
+    AuthResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            token:
+              type: string
+            user:
+              $ref: "#/components/schemas/User"
+          required:
+            - token
+            - user
+      required:
+        - status
+        - message
+        - data
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, worker]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - username
+        - role
+        - createdAt
+
+    UserResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: "#/components/schemas/User"
+      required:
+        - status
+        - message
+        - data
+
+    UsersListResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+      required:
+        - status
+        - message
+        - data
+
+    CreateUserBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, worker]
+      required:
+        - username
+        - password
+        - role
+
+    UpdateUserBody:
+      type: object
+      properties:
+        username:
+          type: string
+        role:
+          type: string
+          enum: [admin, manager, worker]
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        assignedTo:
+          type: integer
+          nullable: true
+        assignedToUser:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        status:
+          type: string
+          enum: [Pending, "In Progress", Completed]
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+        createdBy:
+          type: integer
+        createdByUser:
+          $ref: "#/components/schemas/User"
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - description
+        - progress
+        - status
+        - createdBy
+        - createdAt
+        - updatedAt
+
+    TaskResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          $ref: "#/components/schemas/Task"
+      required:
+        - status
+        - message
+        - data
+
+    TasksListResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Task"
+      required:
+        - status
+        - message
+        - data
+
+    CreateTaskBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        assignedTo:
+          type: integer
+          nullable: true
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        status:
+          type: string
+          enum: [Pending, "In Progress", Completed]
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - name
+        - description
+
+    UpdateTaskBody:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        assignedTo:
+          type: integer
+          nullable: true
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        status:
+          type: string
+          enum: [Pending, "In Progress", Completed]
+        dueDate:
+          type: string
+          format: date-time
+          nullable: true
+
+    DashboardSummary:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            totalTasks:
+              type: integer
+            completedTasks:
+              type: integer
+            pendingTasks:
+              type: integer
+            inProgressTasks:
+              type: integer
+            totalUsers:
+              type: integer
+            totalWorkers:
+              type: integer
+            completionRate:
+              type: number
+          required:
+            - totalTasks
+            - completedTasks
+            - pendingTasks
+            - inProgressTasks
+            - totalUsers
+            - totalWorkers
+            - completionRate
+      required:
+        - status
+        - message
+        - data
+
+    ReportsOverview:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          properties:
+            totalTasks:
+              type: integer
+            completedTasks:
+              type: integer
+            pendingTasks:
+              type: integer
+            inProgressTasks:
+              type: integer
+            completionRate:
+              type: number
+            workerPerformance:
+              type: array
+              items:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                  username:
+                    type: string
+                  totalTasks:
+                    type: integer
+                  completedTasks:
+                    type: integer
+                  completionRate:
+                    type: number
+                required:
+                  - userId
+                  - username
+                  - totalTasks
+                  - completedTasks
+                  - completionRate
+            statusBreakdown:
+              type: array
+              items:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  count:
+                    type: integer
+                  percentage:
+                    type: number
+                required:
+                  - status
+                  - count
+                  - percentage
+          required:
+            - totalTasks
+            - completedTasks
+            - pendingTasks
+            - inProgressTasks
+            - completionRate
+            - workerPerformance
+            - statusBreakdown
+      required:
+        - status
+        - message
+        - data
+
+    GenerateTasksBody:
+      type: object
+      properties:
+        projectDescription:
+          type: string
+        assignedTo:
+          type: integer
+          nullable: true
+      required:
+        - projectDescription
+
+    GeneratedTask:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum: [Pending, "In Progress", Completed]
+        progress:
+          type: integer
+      required:
+        - name
+        - description
+        - status
+        - progress
+
+    GeneratedTasksResponse:
+      type: object
+      properties:
+        status:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeneratedTask"
+      required:
+        - status
+        - message
+        - data

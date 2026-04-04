@@ -1,0 +1,120 @@
+Act as a senior full-stack developer.
+
+Build a complete full-stack web application named "TeamFlow" – a task management system with role-based access control.
+
+TECH STACK:
+- Frontend: React.js (with functional components and hooks)
+- Backend: Node.js with Express.js
+- Database: MongoDB (Mongoose ODM)
+- Authentication: JWT-based authentication
+- Styling: Modern UI using CSS or Tailwind (clean cards, soft shadows, rounded corners)
+
+PROJECT REQUIREMENTS:
+
+1. AUTHENTICATION SYSTEM:
+- Implement login and registration APIs
+- Roles: Admin, Manager, Worker
+- Secure password hashing using bcrypt
+- JWT token generation and protected routes
+- Role-based redirection after login
+
+2. ROLE-BASED ACCESS:
+- Admin:
+  - Create Managers and Workers
+  - View all users and tasks
+- Manager:
+  - Create and assign tasks to Workers
+- Worker:
+  - View assigned tasks
+  - Update task progress and status
+
+3. DASHBOARD:
+- Show summary cards:
+  - Total Tasks
+  - Completed Tasks
+  - Pending Tasks
+- Add a pie chart (Completed vs Pending)
+- Responsive layout
+
+4. TASK MANAGEMENT:
+- Create Task with fields:
+  - name
+  - description
+  - assignedTo (Worker ID)
+  - progress (0–100)
+  - status (Pending, In Progress, Completed)
+  - dueDate
+- Task list with progress bars
+- Update task progress
+- Ensure no undefined/null errors (proper default values & validation)
+
+5. REPORTS PAGE:
+- Show:
+  - Total tasks
+  - Completed tasks
+  - Pending tasks
+- Basic performance insights
+
+6. UI LAYOUT:
+- Sidebar navigation:
+  - Dashboard
+  - Users (Admin only)
+  - Tasks
+  - Reports
+  - Logout
+- Clean SaaS-style UI
+- Fully responsive
+
+7. BACKEND STRUCTURE (MVC):
+- Models: User, Task
+- Controllers: authController, taskController, userController
+- Routes:
+  - /api/auth
+  - /api/tasks
+  - /api/users
+- Middleware:
+  - authMiddleware (JWT verification)
+  - roleMiddleware
+
+8. DATABASE SCHEMA:
+
+User:
+- username (String)
+- password (String)
+- role (admin | manager | worker)
+
+Task:
+- name (String)
+- description (String)
+- assignedTo (ObjectId → User)
+- progress (Number, default: 0)
+- status (String)
+- dueDate (Date)
+- createdBy (ObjectId → User)
+
+9. ERROR HANDLING & UX:
+- Proper try/catch in backend
+- API response format:
+  { status: boolean, message: string, data: any }
+- Loading states in frontend
+- Handle empty/null data safely
+
+10. BONUS (AI FEATURE):
+- Add button: "Generate Tasks using AI"
+- Input: project description
+- Call OpenAI API and generate 5–10 tasks
+- Autofill task list
+
+OUTPUT FORMAT:
+1. Provide complete backend code first
+2. Then frontend code (React components)
+3. Folder structure
+4. Environment variables setup (.env)
+5. Step-by-step instructions to run locally
+6. Deployment steps (optional but preferred)
+
+IMPORTANT:
+- Keep code modular and clean
+- Use best practices
+- Avoid unnecessary complexity
+- Ensure code is runnable without major fixes
