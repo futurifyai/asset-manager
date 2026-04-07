@@ -56,7 +56,8 @@ export default function Users() {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [deletingUserId, setDeletingUserId] = useState<number | null>(null);
   const [filterRole, setFilterRole] = useState<string>("all");
-  const [form, setForm] = useState({ username: "", password: "", role: "worker" as Role });
+  // ✅ Added approverEmail to form state
+  const [form, setForm] = useState({ username: "", password: "", role: "worker" as Role, approverEmail: "" });
 
   const { data: usersData, isLoading } = useListUsers(
     filterRole !== "all" ? { role: filterRole as Role } : undefined
@@ -68,8 +69,9 @@ export default function Users() {
       onSuccess: () => {
         queryClient.invalidateQueries();
         setShowCreateDialog(false);
-        setForm({ username: "", password: "", role: "worker" });
-        toast({ title: "User created successfully" });
+        // ✅ Reset approverEmail too
+        setForm({ username: "", password: "", role: "worker", approverEmail: "" });
+        toast({ title: "User request sent! Awaiting approver's confirmation." });
       },
       onError: (err: { message?: string }) => toast({ variant: "destructive", title: "Failed to create user", description: err.message }),
     },
@@ -87,9 +89,10 @@ export default function Users() {
     },
   });
 
+  // ✅ Now sends approverEmail
   const handleCreate = () => {
-    if (!form.username || !form.password) return;
-    createMutation.mutate({ data: { username: form.username, password: form.password, role: form.role } });
+    if (!form.username || !form.password || !form.approverEmail) return;
+    createMutation.mutate({ data: { username: form.username, password: form.password, role: form.role, approverEmail: form.approverEmail } });
   };
 
   return (
@@ -207,11 +210,22 @@ export default function Users() {
                 </SelectContent>
               </Select>
             </div>
+            {/* ✅ New approverEmail field */}
+            <div className="space-y-2">
+              <Label>Approver Email</Label>
+              <Input
+                type="email"
+                value={form.approverEmail}
+                onChange={(e) => setForm({ ...form, approverEmail: e.target.value })}
+                placeholder="Enter approver's email"
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-            <Button onClick={handleCreate} disabled={!form.username || !form.password || createMutation.isPending}>
-              {createMutation.isPending ? "Creating..." : "Create User"}
+            {/* ✅ Also disabled if approverEmail is empty */}
+            <Button onClick={handleCreate} disabled={!form.username || !form.password || !form.approverEmail || createMutation.isPending}>
+              {createMutation.isPending ? "Sending..." : "Create User"}
             </Button>
           </DialogFooter>
         </DialogContent>

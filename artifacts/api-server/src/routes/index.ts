@@ -5,7 +5,7 @@ import usersRouter from "./users";
 import tasksRouter from "./tasks";
 import dashboardRouter from "./dashboard";
 import reportsRouter from "./reports";
-import aiRouter from "./ai";
+// import aiRouter from "./ai";
 
 const router: IRouter = Router();
 
@@ -15,6 +15,6 @@ router.use(usersRouter);
 router.use(tasksRouter);
 router.use(dashboardRouter);
 router.use(reportsRouter);
-router.use(aiRouter);
+// router.use(aiRouter);
 
 export default router;

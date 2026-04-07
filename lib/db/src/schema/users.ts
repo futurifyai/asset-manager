@@ -7,9 +7,30 @@ export const usersTable = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   role: text("role", { enum: ["admin", "manager", "worker"] }).notNull().default("worker"),
+  status: text("status", { enum: ["pending", "approved", "rejected"] }).notNull().default("pending"),
+  approvalToken: text("approval_token"),
+  approverEmail: text("approver_email"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true });
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof usersTable.$inferSelect;
+
+
+
+// import { pgTable, text, serial, timestamp } from "drizzle-orm/pg-core";
+// import { createInsertSchema } from "drizzle-zod";
+// import { z } from "zod/v4";
+
+// export const usersTable = pgTable("users", {
+//   id: serial("id").primaryKey(),
+//   username: text("username").notNull().unique(),
+//   password: text("password").notNull(),
+//   role: text("role", { enum: ["admin", "manager", "worker"] }).notNull().default("worker"),
+//   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+// });
+
+// export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true });
+// export type InsertUser = z.infer<typeof insertUserSchema>;
+// export type User = typeof usersTable.$inferSelect;

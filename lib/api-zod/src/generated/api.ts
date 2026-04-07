@@ -86,8 +86,8 @@ export const CreateUserBody = zod.object({
   username: zod.string(),
   password: zod.string(),
   role: zod.enum(["admin", "manager", "worker"]),
+  approverEmail: zod.string().email(),
 });
-
 /**
  * @summary Get a user by ID
  */

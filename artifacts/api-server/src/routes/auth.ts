@@ -19,6 +19,10 @@ router.post("/auth/login", async (req, res): Promise<void> => {
     return;
   }
 
+  if (user.status !== "approved") {
+    res.status(403).json({ status: false, message: "Your account is pending approval or has been rejected." });
+    return;
+  }
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
     res.status(401).json({ status: false, message: "Invalid username or password" });
