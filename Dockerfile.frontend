@@ -3,6 +3,8 @@ WORKDIR /app
 RUN npm install -g pnpm
 COPY . .
 RUN pnpm install --no-frozen-lockfile
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 RUN pnpm --filter @workspace/teamflow run build
 RUN npm install -g serve
 EXPOSE 8080
