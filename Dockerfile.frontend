@@ -1,9 +1,11 @@
 FROM node:20-slim
+# cache-bust-v2
 WORKDIR /app
 RUN npm install -g pnpm
 COPY . .
 RUN pnpm install --no-frozen-lockfile
 ENV VITE_API_URL=https://asset-manager-production-097d.up.railway.app
+RUN rm -rf /app/artifacts/teamflow/node_modules/.vite /app/node_modules/.cache
 RUN pnpm --filter @workspace/teamflow run build
 RUN npm install -g serve
 EXPOSE 8080
