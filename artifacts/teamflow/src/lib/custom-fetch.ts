@@ -1,6 +1,8 @@
 export type ErrorType<ErrorData> = ErrorData;
 export type BodyType<BodyData> = BodyData;
 
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
+
 export const customFetch = async <T>(
   url: string,
   options?: RequestInit,
@@ -12,15 +14,15 @@ export const customFetch = async <T>(
     headers.set("Authorization", `Bearer ${token}`);
   }
   
-  const response = await fetch(url, {
+  const fullUrl = `${API_BASE_URL}${url}`;
+  
+  const response = await fetch(fullUrl, {
     ...options,
     headers,
   });
-
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     throw errorData;
   }
-
   return response.json();
 };
