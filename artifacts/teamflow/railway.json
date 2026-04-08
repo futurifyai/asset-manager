@@ -1,10 +1,13 @@
-{ 
-  "$schema": "https://railway.com/railway.schema.json", 
-  "build": { 
-    "builder": "DOCKERFILE", 
-    "dockerfilePath": "Dockerfile.frontend" 
-  }, 
-  "deploy": { 
-    "startCommand": "serve -s ./artifacts/teamflow/dist/public -l 8080" 
-  } 
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile.frontend",
+    "dockerBuildArgs": {
+      "VITE_API_URL": "https://asset-manager-production-097d.up.railway.app"
+    }
+  },
+  "deploy": {
+    "startCommand": "serve -s ./artifacts/teamflow/dist/public -l 8080"
+  }
 }
