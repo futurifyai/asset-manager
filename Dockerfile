@@ -2,13 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-RUN npm install -g pnpm
-
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN npm install -g pnpm@9
 
 COPY . .
 
-RUN pnpm install --no-frozen-lockfile --reporter=verbose 2>&1 || (cat /root/.local/share/pnpm/store/v3/tmp/*/debug.log 2>/dev/null; exit 1)
+RUN pnpm install --no-frozen-lockfile
 
 RUN pnpm --filter @workspace/api-server run build
 
