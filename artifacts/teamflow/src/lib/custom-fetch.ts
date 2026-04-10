@@ -25,4 +25,4 @@ export const customFetch = async <T>(
     throw errorData;
   }
   return response.json();
-};
+}; 
