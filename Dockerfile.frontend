@@ -1,12 +1,14 @@
-FROM node:20-slim
-# cache-bust-v2
+FROM node:20-slim AS builder
 WORKDIR /app
 RUN npm install -g pnpm
 COPY . .
 RUN pnpm install --no-frozen-lockfile
 ENV VITE_API_URL=https://asset-manager-production-097d.up.railway.app
-RUN rm -rf /app/artifacts/teamflow/node_modules/.vite /app/node_modules/.cache
+RUN rm -rf /app/artifacts/teamflow/node_modules/.vite
 RUN pnpm --filter @workspace/teamflow run build
-RUN npm install -g serve
+
+FROM nginx:alpine
+COPY --from=builder /app/artifacts/teamflow/dist/public /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 EXPOSE 8080
-CMD ["serve", "-s", "./artifacts/teamflow/dist/public", "-l", "8080"]
+CMD ["nginx", "-g", "daemon off;"]
