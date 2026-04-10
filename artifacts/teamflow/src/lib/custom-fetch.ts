@@ -1,7 +1,7 @@
 export type ErrorType<ErrorData> = ErrorData;
 export type BodyType<BodyData> = BodyData;
 
-const API_BASE_URL = import.meta.env.VITE_API_URL ?? "https://asset-manager-production-097d.up.railway.app";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://asset-manager-production-097d.up.railway.app";
 
 export const customFetch = async <T>(
   url: string,
