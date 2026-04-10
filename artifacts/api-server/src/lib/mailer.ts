@@ -1,19 +1,6 @@
-import dotenv from "dotenv";
-import { fileURLToPath } from "url";
-import { dirname, join } from "path";
+import { Resend } from "resend";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-dotenv.config({ path: join(__dirname, "../../../.env") });
-import nodemailer from "nodemailer";
-
-export const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendApprovalEmail({
   approverEmail,
@@ -31,8 +18,8 @@ export async function sendApprovalEmail({
   const approveUrl = `${apiBaseUrl}/api/users/approve/${token}`;
   const rejectUrl = `${apiBaseUrl}/api/users/reject/${token}`;
 
-  await transporter.sendMail({
-    from: `"Asset Manager" <${process.env.GMAIL_USER}>`,
+  await resend.emails.send({
+    from: "Asset Manager <onboarding@resend.dev>",
     to: approverEmail,
     subject: `User Approval Request: ${username}`,
     html: `
@@ -43,7 +30,7 @@ export async function sendApprovalEmail({
           <tr><td><b>Username:</b></td><td>${username}</td></tr>
           <tr><td><b>Role:</b></td><td>${role}</td></tr>
         </table>
-        <div style="margin-top: 24px; display: flex; gap: 12px;">
+        <div style="margin-top: 24px;">
           <a href="${approveUrl}" style="background:#22c55e; color:white; padding:12px 24px; border-radius:6px; text-decoration:none; font-weight:bold;">
             ✅ Approve
           </a>

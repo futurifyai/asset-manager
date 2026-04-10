@@ -1,0 +1,23 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "services": {
+    "asset-manager": {
+      "build": {
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "Dockerfile"
+      },
+      "deploy": {
+        "startCommand": "node --enable-source-maps ./artifacts/api-server/dist/index.mjs"
+      }
+    },
+    "teamflow": {
+      "build": {
+        "builder": "DOCKERFILE",
+        "dockerfilePath": "Dockerfile.frontend"
+      },
+      "deploy": {
+        "startCommand": "serve -s ./artifacts/teamflow/dist/public -l 3000"
+      }
+    }
+  }
+}
